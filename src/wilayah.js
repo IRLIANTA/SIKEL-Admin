@@ -1,0 +1,27 @@
+export const WILAYAH = {
+  "Putussibau Utara": ["Pala Pulau","Sibau Hilir","Sibau Hulu","Padua Mendalam","Datah Dian","Nanga Nyabau","Nanga Awin","Ariung Mendalam","Nanga Sambus","Banua Tengah","Tanjung Beruang","Tanjung Karang","Seluan","Sungai Uluk Palin","Tanjung Lasa","Lauk","Jangkang"],
+  "Putussibau Selatan": ["Sungai Uluk","Jaras","Melapi","Kedamin Darat","Tanjung Jati","Sayut","Urang Unsa","Suka Maju","Cempaka Baru","Beringin Jaya","Bungan Jaya","Tanjung Lokang","Kereho","Ingko' Tambe"],
+  "Bika": ["Bika","Jelemuk","Teluk Sindur","Bika Hulu","Nanga Manday","Melapi Manday","Penyeluang","Jongkong Manday"],
+  "Kalis": ["Nanga Sebintang","Nanga Lebangan","Nanga Kalis","Nanga Raun","Bahenap","Nanga Tubuk","Nanga Danau","Kensuray","Rantau Kalis","Kalis Raya","Tekudak","Semerantau","Tapang Daan","Segiam","Peniung","Ribang Kadeng","Rantau Bumbun"],
+  "Mentebah": ["Nanga Mentebah","Tekalong","Suka Maju","Kepala Gurung","Tanjung","Tanjung Intan","Tanjung Jaya","Menarin"],
+  "Embaloh Hilir": ["Nanga Embaloh","Keliling Semulung","Lawik","Nanga Lauk","Nanga Palin","Kirin Nagka","Pala Pintas","Ujung Bayur","Belatung"],
+  "Bunut Hilir": ["Bunut Hilir","Bunut Hulu","Teluk Aur","Nanga Tuan","Ujung Pandang","Empangau","Tembang","Bunut Tengah","Entibab","Kapuas Raya","Empangau Hilir"],
+  "Bunut Hulu": ["Nanga Suruk","Temunyuk","Nanga Semangut","Nanga Dua","Selaup","Riam Piyang","Nanga Payang","Batu Tiga","Semangut Utara","Segitak","Nanga Kelibang","Sungai Besar","Bakong Permai","Beringin","Pantas Bersatu"],
+  "Pengkadan": ["Kerangan Panjang","Mawan","Marta Dana","Buak Limbang","Riam Panjang","Permata","Hulu Pengkadan","Pinang Laka","Sasan","Pengkadan Hilir","Sira Jaya"],
+  "Boyan Tanjung": ["Nanga Danau","Boyan Tanjung","Riam Mengelai","Nanga Sangan","Sri Wangi","Nanga Boyan","Nanga Betung","Mujan","Nanga Jemah","Tubang Jaya","Karya Maju","Landau Mentail","Delintas Karya","Teluk Geruguk","Nanga Ret","Pemawan"],
+  "Hulu Gurung": ["Sejiram","Beluis Harum","Gurung","Bati","Seneban","Belikai","Ranyai","Emperiang","Pala Kota","Nanga Lot","Tanjung Keliling","Tajau Mada","Jerenjang","Bekuan","Nanga Pala"],
+  "Seberuang": ["Sejiram","Beluis Harum","Gurung","Bati","Seneban","Belikai","Ranyai","Emperiang","Pala Kota","Nanga Lot","Tanjung Keliling","Tajau Mada","Jerenjang","Bekuan","Nanga Pala"],
+  "Silat Hilir": ["Perigi","Baru","Pangeran","Miau Merah","Setunggul","Sungai Sena","Penai","Nanga Nuar","Bongkong","Seberu","Sentabai","Rumbih","Bukit Penai"],
+  "Silat Hulu": ["Nanga Dangkan","Belimbing","Nanga Ngeri","Landau Badai","Nanga Lungu","Nanga Luan","Riam Tapang","Lebak Najah","Dangkan Kota","Perjuk","Landau Rantau","Entebi","Selangkai","Selimu"],
+  "Semitau": ["Semitau Hulu","Kenerak","Nangan Seberuang","Entipan","Kenepai Komplek","Semitau Hilir","Nanga Kenepai","Tua' Abang","Nanga Lemedak","Marsedan Raya","Padung Kumang","Sekedau"],
+  "Selimbau": ["Gudang Hulu","Gudang Hilir","Dalam","Nibung","Piasak","Engkerengas","Gerayau","Benuis","Titian Kuala","Sekubah","Piasak Hulu","Mawan","Nanga Leboyan","Tempurau","Vega","Sekulat","Semalah"],
+  "Suhaid": ["Mensusai","Kerengas","Mantan","Nanga Suhaid","Tanjung","Madang Permai","Laut Tawang","Jongkong Hulu","Menapar","Lubuk Pengail","Tanjung Harapan"],
+  "Jongkong": ["Jongkong Kiri Hilir","Jongkong Kanan","Jongkong Kiri Hulu","Jongkong Pasar","Ujung Said","Temenang","Ujung Jambu","Bontai","Jongkong Kiri Tengah","Jongkong Tanjung","Kandung Suli","Penepian Raya","Karya Baru","Nanga Serian"],
+  "Embaloh Hulu": ["Banua Martinus","Menua Sadap","Pulau Manak","Banua Ujung","Saujung Giling Manik","Ulak Pauk","Langan Baru","Batu Lintang","Rantau Prapat","Tamao"],
+  "Batang Lupar": ["Setulang","Sepandan","Sungai Ajung","Sungai Abau","Labian","Mensiau","Melemba","Lanjak Deras","Sungai Senunuk","Labian Ira'ang"],
+  "Badau": ["Badau","Janting","Kekurak","Pulau Majang","Sebindang","Semuntik Seriang","Tajum","Titing Seligi"],
+  "Empanang": ["Bajau Andai","Keling Panggau","Kumang Jaya","Laja Sandang","Nanga Kantuk","Tintin Peninjau"],
+  "Puring Kencana": ["Sungai Antu","Kantuk Asam","Kantuk Bunut","Langau","Merakai Panjang","Sungai Mawang"],
+};
+export const KECAMATAN = Object.keys(WILAYAH);
+export const TOTAL_DESA = Object.values(WILAYAH).reduce((a, d) => a + d.length, 0);
