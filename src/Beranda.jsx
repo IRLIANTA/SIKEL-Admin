@@ -1,9 +1,11 @@
+import { Ico } from "./Icons.jsx";
+
 const LAYANAN = [
-  ["Pendataan profil keluarga", "Mencatat aspek kependudukan, keluarga berencana, dan pembangunan keluarga, lalu menyusun profil serta rekomendasi secara otomatis."],
-  ["Profil kelompok kegiatan", "Mengelola BKB, BKR, BKL, UPPKA, PIK-R, Kampung KB, Rumah Data, dan PPKS lengkap dengan klasifikasinya."],
-  ["Pencatatan layanan KB", "Input bulanan pelayanan suntik, pil, dan kondom per fasilitas: jumlah pelayanan, efek samping, kegagalan, dan rujukan."],
-  ["Monitoring dan evaluasi", "Instrumen berisi target dan realisasi untuk tingkat input, proses, output, outcome, dan impact."],
-  ["Pemantauan per wilayah", "Membandingkan 23 kecamatan dan 277 desa di Kabupaten Kapuas Hulu dalam satu tempat."],
+  ["users", "Pendataan profil keluarga", "Mencatat aspek kependudukan, keluarga berencana, dan pembangunan keluarga, lalu menyusun profil dan rekomendasi otomatis."],
+  ["groups", "Profil kelompok kegiatan", "Mengelola BKB, BKR, BKL, UPPKA, PIK-R, Kampung KB, Rumah Data, dan PPKS beserta klasifikasinya."],
+  ["clipboard", "Pencatatan layanan KB", "Input bulanan pelayanan suntik, pil, dan kondom per fasilitas: efek samping, kegagalan, dan rujukan."],
+  ["chart", "Monitoring dan evaluasi", "Instrumen target dan realisasi untuk tingkat input, proses, output, outcome, dan impact."],
+  ["map", "Pemantauan per wilayah", "Membandingkan 23 kecamatan dan 277 desa di Kabupaten Kapuas Hulu dalam satu tempat."],
 ];
 const KEGUNAAN = [
   ["Penyuluh dan konselor keluarga", "Mengetahui keluarga yang perlu didampingi, menyusun profil, dan menyiapkan bahan konseling lebih cepat."],
@@ -16,64 +18,80 @@ const FUNGSI = [
   ["Grafik dan tabel", "Tren cakupan, efek samping, kegagalan, dan pembiayaan."],
   ["Target dan realisasi", "Status capaian tiap indikator dengan penanda warna."],
   ["Cetak laporan", "Profil keluarga dan instrumen dapat disimpan sebagai PDF."],
-  ["Login admin", "Hanya petugas yang dapat mengelola data."],
+  ["Login admin", "Hanya petugas terdaftar yang dapat mengelola data."],
 ];
-const ALUR = ["Input data keluarga, kelompok, dan layanan", "Sistem menghitung skor dan realisasi", "Admin memantau per wilayah dan membandingkan dengan target", "Hasilnya dipakai untuk tindak lanjut dan laporan"];
+const ALUR = [
+  ["clipboard", "Input", "Petugas mencatat data keluarga, kelompok, dan layanan."],
+  ["grid", "Olah", "Sistem menghitung skor, klasifikasi, dan realisasi."],
+  ["map", "Pantau", "Admin membandingkan wilayah dan capaian terhadap target."],
+  ["check", "Tindak lanjut", "Hasilnya dipakai untuk pendampingan dan laporan."],
+];
+const ANGKA = [["23", "kecamatan"], ["277", "desa"], ["5", "tingkat monitoring"], ["3", "jenis kontrasepsi dipantau"]];
 
 export default function Beranda({ pergi }) {
-  const gulir = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const gulir = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   return (
-    <>
-      <section className="hero wrap">
-        <div>
-          <h1>SIKEL: sistem informasi untuk membantu kerja penyuluh keluarga</h1>
-          <p className="muted lead">Website admin untuk mendata keluarga dan kelompok kegiatan, mencatat layanan KB, serta memantau capaian program di tingkat kecamatan dan desa di Kabupaten Kapuas Hulu.</p>
-          <div className="actions" style={{ marginTop: 8 }}>
-            <button className="btn" onClick={() => pergi("dashboard")}>Buka dashboard</button>
-            <button className="btn ghost" onClick={() => gulir("layanan")}>Pelajari lebih lanjut</button>
+    <div className="beranda">
+      <section className="hero2">
+        <div className="hero2-text">
+          <span className="badge">Demo portofolio · data fiktif</span>
+          <h1>Pantau keluarga dan layanan KB dari satu tempat</h1>
+          <p>SIKEL membantu penyuluh mendata keluarga dan kelompok kegiatan, mencatat layanan KB, serta memantau capaian program di tingkat kecamatan dan desa di Kabupaten Kapuas Hulu.</p>
+          <div className="actions">
+            <button className="btn light" onClick={() => pergi("dashboard")}>Buka dashboard</button>
+            <button className="btn outline-light" onClick={() => gulir("layanan")}>Pelajari lebih lanjut</button>
           </div>
         </div>
-        <aside className="hero-card" aria-label="Ringkasan sistem">
-          <dl>
-            <dt>Cakupan wilayah</dt><dd>23 kecamatan, 277 desa</dd>
-            <dt>Data utama</dt><dd>Keluarga, kelompok, layanan KB</dd>
-            <dt>Pengguna</dt><dd>Admin dan petugas</dd>
-            <dt>Status</dt><dd>Demo portofolio, data fiktif</dd>
-          </dl>
-        </aside>
-      </section>
-
-      <section className="wrap sect">
-        <h2>Apa itu SIKEL?</h2>
-        <p>SIKEL adalah singkatan dari Sistem Informasi Keluarga. Website ini dibuat sebagai contoh bagaimana pekerjaan pencatatan, pelaporan, dan pemantauan program kependudukan, keluarga berencana, dan pembangunan keluarga dapat dibantu teknologi informasi.</p>
-        <p>Selama ini data semacam itu sering tersebar di buku catatan dan berkas terpisah. SIKEL mengumpulkannya dalam satu sistem sehingga profil keluarga, kondisi kelompok kegiatan, dan hasil layanan KB dapat dilihat bersama.</p>
-      </section>
-
-      <section className="wrap sect" id="layanan">
-        <h2>Layanan yang tersedia</h2>
-        <div className="grid g3">{LAYANAN.map(([j, d]) => <div className="card" key={j}><h3>{j}</h3><p className="muted" style={{ margin: 0 }}>{d}</p></div>)}</div>
-      </section>
-
-      <section className="wrap sect">
-        <h2>Kegunaan untuk siapa</h2>
-        <div className="grid g3">{KEGUNAAN.map(([j, d]) => <div className="card" key={j}><h3>{j}</h3><p className="muted" style={{ margin: 0 }}>{d}</p></div>)}</div>
-      </section>
-
-      <section className="wrap sect">
-        <h2>Fungsi sistem</h2>
-        <div className="grid g3">{FUNGSI.map(([j, d]) => <div key={j} style={{ borderLeft: "4px solid var(--blue)", paddingLeft: 14 }}><h3>{j}</h3><p className="muted" style={{ margin: 0 }}>{d}</p></div>)}</div>
-      </section>
-
-      <section className="wrap sect">
-        <h2>Alur kerja</h2>
-        <div className="alur">{ALUR.map((a, i) => <div className="card" key={a}>{a}</div>)}</div>
-      </section>
-
-      <section className="wrap sect">
-        <div className="notice" style={{ margin: 0 }}>
-          Seluruh data pada website ini adalah data fiktif untuk keperluan demo, dan website ini bukan situs resmi BKKBN. Versi untuk masyarakat (edukasi dan alur konseling) dibuat sebagai website terpisah.
+        <div className="hero2-stats" aria-label="Cakupan sistem">
+          {ANGKA.map(([a, b]) => <div className="tile" key={b}><b>{a}</b><span>{b}</span></div>)}
         </div>
       </section>
-    </>
+
+      <section className="sec">
+        <div className="sec-head"><h2>Apa itu SIKEL?</h2></div>
+        <div className="about">
+          <p>SIKEL adalah singkatan dari Sistem Informasi Keluarga. Website ini dibuat sebagai contoh bagaimana pencatatan, pelaporan, dan pemantauan program kependudukan, keluarga berencana, dan pembangunan keluarga dapat dibantu teknologi informasi.</p>
+          <p>Data semacam itu sering tersebar di buku catatan dan berkas terpisah. SIKEL mengumpulkannya dalam satu sistem sehingga profil keluarga, kondisi kelompok kegiatan, dan hasil layanan KB dapat dilihat bersama.</p>
+        </div>
+      </section>
+
+      <section className="sec" id="layanan">
+        <div className="sec-head"><h2>Layanan yang tersedia</h2><p className="muted">Lima layanan utama yang dapat dikelola dari dashboard.</p></div>
+        <div className="grid g3">
+          {LAYANAN.map(([i, j, d]) => (
+            <div className="card feat" key={j}><span className="ico-badge"><Ico n={i} /></span><h3>{j}</h3><p className="muted">{d}</p></div>
+          ))}
+        </div>
+      </section>
+
+      <section className="sec">
+        <div className="sec-head"><h2>Kegunaan untuk siapa</h2><p className="muted">Setiap peran melihat data yang sama dengan kebutuhan berbeda.</p></div>
+        <div className="grid g3">
+          {KEGUNAAN.map(([j, d]) => <div className="card accent" key={j}><h3>{j}</h3><p className="muted">{d}</p></div>)}
+        </div>
+      </section>
+
+      <section className="sec">
+        <div className="sec-head"><h2>Fungsi sistem</h2></div>
+        <div className="fungsi">
+          {FUNGSI.map(([j, d]) => (
+            <div className="fitem" key={j}><span className="tick"><Ico n="check" size={16} /></span><div><h3>{j}</h3><p className="muted">{d}</p></div></div>
+          ))}
+        </div>
+      </section>
+
+      <section className="sec">
+        <div className="sec-head"><h2>Alur kerja</h2><p className="muted">Dari pencatatan di lapangan sampai tindak lanjut.</p></div>
+        <div className="steps">
+          {ALUR.map(([i, j, d]) => (
+            <div className="step" key={j}><span className="ico-circle"><Ico n={i} /></span><h3>{j}</h3><p className="muted">{d}</p></div>
+          ))}
+        </div>
+      </section>
+
+      <section className="sec">
+        <div className="notice">Seluruh data pada website ini adalah data fiktif untuk keperluan demo, dan website ini bukan situs resmi BKKBN. Versi untuk masyarakat (edukasi dan alur konseling) dibuat sebagai website terpisah.</div>
+      </section>
+    </div>
   );
 }
