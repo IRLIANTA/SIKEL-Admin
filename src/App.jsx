@@ -8,51 +8,114 @@ import HakCipta from "./HakCipta.jsx";
 import Layanan from "./Layanan.jsx";
 import Instrumen from "./Instrumen.jsx";
 import Monev from "./Monev.jsx";
+import { supabase } from "./supabase.js";
+import { MAP, ambilSemua } from "./db.js";
+import { Ico } from "./Icons.jsx";
 
 const MENU = [["beranda", "Beranda"], ["dashboard", "Dashboard"], ["wilayah", "Per Wilayah"], ["keluarga", "Profil Keluarga"], ["kelompok", "Kelompok Kegiatan"], ["layanan", "Input Layanan KB"], ["instrumen", "Instrumen Monitoring"], ["monev", "Monitoring & Evaluasi"], ["hak-cipta", "Hak Cipta"]];
 const DASH = MENU.map((m) => m[0]);
+const IKON = { beranda: "home", dashboard: "grid", wilayah: "map", keluarga: "users", kelompok: "groups", layanan: "clipboard", instrumen: "target", monev: "chart", "hak-cipta": "info" };
 
 export default function App() {
-  const [masuk, setMasuk] = useState(false);
+  const [sesi, setSesi] = useState(null);
+  const [siap, setSiap] = useState(false);
+  const [keluarga, setKeluarga] = useState([]);
+  const [poktan, setPoktan] = useState([]);
+  const [layanan, setLayanan] = useState([]);
+  const [targets, setTargets] = useState({});
+  const [muat, setMuat] = useState("");
+  const [pesan, setPesan] = useState("");
+  const [wil, setWil] = useState(SEMUA);
   const baca = () => location.hash.replace("#", "");
   const [hash, setHash] = useState(baca());
-  const awal = useMemo(() => D.bangkitkanData(), []);
-  const [keluarga, setKeluarga] = useState(awal.keluarga);
-  const [poktan, setPoktan] = useState(awal.poktan);
-  const [layanan, setLayanan] = useState(awal.layanan);
-  const [wil, setWil] = useState(SEMUA);
-  const [targets, setTargets] = useState({});
   useEffect(() => { const f = () => { setHash(baca()); window.scrollTo(0, 0); }; window.addEventListener("hashchange", f); return () => window.removeEventListener("hashchange", f); }, []);
+
+  useEffect(() => {
+    if (!supabase) { setSiap(true); return; }
+    supabase.auth.getSession().then(({ data }) => { setSesi(data.session); setSiap(true); });
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSesi(s));
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  const muatData = async () => {
+    setMuat("memuat"); setPesan("");
+    try {
+      const [k, p, l, t] = await Promise.all([ambilSemua("keluarga"), ambilSemua("kelompok"), ambilSemua("layanan_kb"), supabase.from("target_instrumen").select("*")]);
+      if (t.error) throw t.error;
+      setKeluarga(k); setPoktan(p); setLayanan(l);
+      setTargets(Object.fromEntries(t.data.map((r) => [`${r.kec}/${r.desa}|${r.indikator}`, Number(r.nilai)])));
+      setMuat("");
+    } catch (e) { setMuat("gagal"); setPesan(e.message || "Gagal memuat data."); }
+  };
+  const userId = sesi?.user?.id;
+  useEffect(() => {
+    if (userId) muatData();
+    else { setKeluarga([]); setPoktan([]); setLayanan([]); setTargets({}); setMuat(""); }
+  }, [userId]);
 
   const dalam = (x) => (wil.kec === "Semua" || x.kec === wil.kec) && (wil.desa === "Semua" || x.desa === wil.desa);
   const kF = keluarga.filter(dalam), pF = poktan.filter(dalam), lF = layanan.filter(dalam);
   const bulanList = useMemo(() => [...new Set(layanan.map((l) => l.bulan))].sort().slice(-6), [layanan]);
   const bulanAkhir = bulanList[bulanList.length - 1] || "";
-  const simpan = (set) => (item) => set((d) => (item.id ? d.map((x) => (x.id === item.id ? item : x)) : [...d, { ...item, id: Date.now() }]));
-  const hapus = (set) => (id) => set((d) => d.filter((x) => x.id !== id));
+
+  const simpan = (tabel, set) => async (item) => {
+    const q = item.id ? supabase.from(tabel).update(MAP[tabel].to(item)).eq("id", item.id) : supabase.from(tabel).insert(MAP[tabel].to(item));
+    const { data, error } = await q.select().single();
+    if (error) { setPesan("Gagal menyimpan: " + error.message); return false; }
+    const baru = MAP[tabel].from(data);
+    set((d) => (item.id ? d.map((x) => (x.id === baru.id ? baru : x)) : [...d, baru]));
+    setPesan(""); return true;
+  };
+  const hapus = (tabel, set) => async (id) => {
+    const { error } = await supabase.from(tabel).delete().eq("id", id);
+    if (error) return setPesan("Gagal menghapus: " + error.message);
+    set((d) => d.filter((x) => x.id !== id)); setPesan("");
+  };
+  const simpanTarget = async (kec, desa, indikator, nilai) => {
+    const n = Number(nilai);
+    if (nilai === "" || Number.isNaN(n) || n < 0) return;
+    const { error } = await supabase.from("target_instrumen").upsert({ kec, desa, indikator, nilai: n, updated_at: new Date().toISOString() }, { onConflict: "kec,desa,indikator" });
+    setPesan(error ? "Gagal menyimpan target: " + error.message : "");
+  };
+  const resetTarget = async (kec, desa) => {
+    const { error } = await supabase.from("target_instrumen").delete().eq("kec", kec).eq("desa", desa);
+    setPesan(error ? "Gagal mengembalikan target: " + error.message : "");
+  };
   const bukaMonev = (w) => { setWil(w); location.hash = "monev"; };
   const pergi = (h) => { location.hash = h; };
+  const keluar = async () => { await supabase.auth.signOut(); location.hash = ""; };
+
+  if (!supabase) return <Setup />;
+  if (!siap) return <div className="login"><div className="spin" role="status" aria-label="Memuat" /></div>;
+  if (!sesi) return <Login />;
+  if (muat === "memuat") return <div className="login"><div style={{ textAlign: "center" }}><div className="spin" role="status" aria-label="Memuat" /><p className="muted" style={{ marginTop: 14 }}>Memuat data...</p></div></div>;
+  if (muat === "gagal") return (
+    <div className="login"><div className="card"><h2>Data gagal dimuat</h2><p className="muted">{pesan}</p>
+      <div className="actions"><button className="btn" onClick={muatData}>Coba lagi</button><button className="btn ghost" onClick={keluar}>Keluar</button></div></div></div>
+  );
 
   const hal = DASH.includes(hash) ? hash : "beranda";
-
-  if (!masuk) return <Login onMasuk={() => { setMasuk(true); pergi("beranda"); }} />;
-
   const pakaiFilter = ["dashboard", "keluarga", "kelompok", "layanan", "instrumen", "monev"].includes(hal);
   return (
     <div className="shell">
       <aside className="side">
-        <div className="brand">SIKEL Admin</div>
-        <div className="sub">Kabupaten Kapuas Hulu</div>
-        {MENU.map(([k, n]) => <button key={k} onClick={() => pergi(k)} aria-current={hal === k ? "page" : undefined}>{n}</button>)}
-        <button className="out" onClick={() => { setMasuk(false); location.hash = ""; }}>Keluar</button>
+        <div className="logo"><span className="logo-mark">S</span><div><div className="logo-name">SIKEL Admin</div><div className="logo-sub">Kabupaten Kapuas Hulu</div></div></div>
+        <nav className="side-nav" aria-label="Menu utama">
+          {MENU.map(([k, n]) => <button key={k} onClick={() => pergi(k)} aria-current={hal === k ? "page" : undefined}><Ico n={IKON[k]} /><span>{n}</span></button>)}
+        </nav>
+        <div className="side-foot">
+          <div className="who" title={sesi.user.email}>{sesi.user.email}</div>
+          <button className="out" onClick={keluar}><Ico n="logout" size={18} /><span>Keluar</span></button>
+        </div>
       </aside>
       <main className="content">
+        {pesan && <div className="notice" role="alert" style={{ background: "#F3F4F6", borderColor: "#D1D5DB", color: "#111827" }}>{pesan}</div>}
         {pakaiFilter && <Filter wil={wil} setWil={setWil} />}
         {hal === "wilayah" ? <Wilayah keluarga={keluarga} poktan={poktan} onMonev={bukaMonev} /> :
-         hal === "keluarga" ? <Keluarga data={kF} wil={wil} onSave={simpan(setKeluarga)} onDelete={hapus(setKeluarga)} /> :
-         hal === "kelompok" ? <Kelompok data={pF} wil={wil} onSave={simpan(setPoktan)} onDelete={hapus(setPoktan)} /> :
-         hal === "layanan" ? <Layanan data={lF} wil={wil} bulanAkhir={bulanAkhir} onSave={simpan(setLayanan)} onDelete={hapus(setLayanan)} /> :
-         hal === "instrumen" ? <Instrumen keluarga={kF} poktan={pF} layanan={lF} wil={wil} bulanAkhir={bulanAkhir} targets={targets} setTargets={setTargets} /> :
+         hal === "keluarga" ? <Keluarga data={kF} wil={wil} onSave={simpan("keluarga", setKeluarga)} onDelete={hapus("keluarga", setKeluarga)} /> :
+         hal === "kelompok" ? <Kelompok data={pF} wil={wil} onSave={simpan("kelompok", setPoktan)} onDelete={hapus("kelompok", setPoktan)} /> :
+         hal === "layanan" ? <Layanan data={lF} wil={wil} bulanAkhir={bulanAkhir} onSave={simpan("layanan_kb", setLayanan)} onDelete={hapus("layanan_kb", setLayanan)} /> :
+         hal === "instrumen" ? <Instrumen keluarga={kF} poktan={pF} layanan={lF} wil={wil} bulanAkhir={bulanAkhir} targets={targets} setTargets={setTargets} onSimpan={simpanTarget} onReset={resetTarget} /> :
          hal === "monev" ? <Monev kF={kF} pF={pF} lF={lF} wil={wil} bulanList={bulanList} bulanAkhir={bulanAkhir} /> :
          hal === "hak-cipta" ? <HakCipta /> : hal === "dashboard" ? <Ringkasan keluarga={kF} poktan={pF} wil={wil} /> : <Beranda pergi={pergi} />}
       </main>
@@ -60,17 +123,64 @@ export default function App() {
   );
 }
 
-function Login({ onMasuk }) {
+function Setup() {
   return (
-    <div className="login">
-      <form className="card" onSubmit={(e) => { e.preventDefault(); onMasuk(); }}>
-        <h1>SIKEL Admin</h1>
-        <p className="muted">Masuk untuk mengelola data keluarga dan layanan KB di Kabupaten Kapuas Hulu.</p>
-        <label>Email<input type="email" required defaultValue="admin@contoh.id" /></label>
-        <label>Kata sandi<input type="password" required defaultValue="demo1234" /></label>
-        <button className="btn" style={{ width: "100%" }}>Masuk</button>
-        <p className="muted" style={{ marginTop: 12, fontSize: ".85rem" }}>Mode demo: tombol Masuk langsung membuka dashboard. Login sungguhan akan memakai Supabase Auth.</p>
-      </form>
+    <div className="login"><div className="card" style={{ maxWidth: 520 }}>
+      <h2>Konfigurasi belum lengkap</h2>
+      <p className="muted">File <b>.env</b> belum berisi VITE_SUPABASE_URL dan VITE_SUPABASE_PUBLISHABLE_KEY. Isi keduanya (lihat .env.example), lalu jalankan ulang <b>npm run dev</b>. Di Vercel, isi di Settings, Environment Variables, lalu Redeploy.</p>
+    </div></div>
+  );
+}
+
+const pesanLogin = (e) => {
+  const c = e.code || "", m = (e.message || "").toLowerCase();
+  if (c === "invalid_credentials" || m.includes("invalid login")) return "Email atau kata sandi salah.";
+  if (c === "email_not_confirmed" || m.includes("not confirmed")) return "Email akun ini belum dikonfirmasi. Di Supabase buka Authentication, Users, lalu konfirmasi akunnya.";
+  if (c === "over_request_rate_limit" || e.status === 429) return "Terlalu banyak percobaan masuk. Tunggu beberapa menit lalu coba lagi.";
+  if (m.includes("fetch") || m.includes("network") || e.status === 0) return "Tidak dapat terhubung ke server. Periksa koneksi internet dan nilai VITE_SUPABASE_URL.";
+  return "Gagal masuk: " + e.message;
+};
+
+function Login() {
+  const [email, setEmail] = useState("");
+  const [sandi, setSandi] = useState("");
+  const [lihat, setLihat] = useState(false);
+  const [err, setErr] = useState("");
+  const [proses, setProses] = useState(false);
+  const kirim = async (e) => {
+    e.preventDefault(); setProses(true); setErr("");
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: sandi });
+      if (error) setErr(pesanLogin(error)); else location.hash = "beranda";
+    } catch (x) { setErr(pesanLogin(x)); }
+    setProses(false);
+  };
+  return (
+    <div className="auth">
+      <aside className="auth-side">
+        <div className="logo"><span className="logo-mark light">S</span><div><div className="logo-name">SIKEL Admin</div><div className="logo-sub">Kabupaten Kapuas Hulu</div></div></div>
+        <div>
+          <h2>Sistem Informasi Keluarga</h2>
+          <p>Kelola profil keluarga, kelompok kegiatan, dan layanan KB, serta pantau capaian program per kecamatan dan desa.</p>
+        </div>
+        <p className="auth-note">Demo portofolio. Seluruh data adalah data fiktif.</p>
+      </aside>
+      <main className="auth-main">
+        <form className="auth-card" onSubmit={kirim}>
+          <h1>Masuk</h1>
+          <p className="muted">Gunakan akun admin yang terdaftar.</p>
+          <label>Email<input type="email" required autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
+          <label>Kata sandi
+            <span className="pw">
+              <input type={lihat ? "text" : "password"} required autoComplete="current-password" value={sandi} onChange={(e) => setSandi(e.target.value)} />
+              <button type="button" className="pw-btn" onClick={() => setLihat(!lihat)} aria-label={lihat ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}><Ico n={lihat ? "eyeoff" : "eye"} size={18} /></button>
+            </span>
+          </label>
+          {err && <div className="alert" role="alert">{err}</div>}
+          <button className="btn block" disabled={proses}>{proses ? "Memproses..." : "Masuk"}</button>
+          <p className="muted small">Akun dibuat oleh administrator. Pendaftaran mandiri dinonaktifkan.</p>
+        </form>
+      </main>
     </div>
   );
 }
@@ -162,7 +272,7 @@ function Keluarga({ data, wil, onSave, onDelete }) {
   const set = (k, v) => upd({ [k]: v });
   const baru = () => setForm({ nama: "", ...awalWil(wil), anggota: 4, balita: 0, remaja: 0, lansia: 0, kbAktif: false, metode: "Suntik", ikutBKB: false, ikutBKR: false, ikutBKL: false, rumahLayak: false, airBersih: false, sanitasi: false });
   const cb = (k, n) => <label><input type="checkbox" checked={!!form[k]} onChange={(e) => set(k, e.target.checked)} />{n}</label>;
-  const simpan = (e) => { e.preventDefault(); onSave(form); setForm(null); };
+  const simpan = async (e) => { e.preventDefault(); if (await onSave(form)) setForm(null); };
   const daftar = data.filter((k) => (k.nama + k.desa + k.kec).toLowerCase().includes(cari.toLowerCase()));
   const p = lihat && data.find((x) => x.id === lihat);
 
@@ -235,7 +345,7 @@ function Kelompok({ data, wil, onSave, onDelete }) {
   const [filter, setFilter] = useState("Semua");
   const upd = (o) => setForm({ ...form, ...o });
   const set = (k, v) => upd({ [k]: v });
-  const simpan = (e) => { e.preventDefault(); onSave(form); setForm(null); };
+  const simpan = async (e) => { e.preventDefault(); if (await onSave(form)) setForm(null); };
   const daftar = data.filter((p) => filter === "Semua" || p.jenis === filter);
 
   if (form) {
@@ -276,4 +386,3 @@ function Kelompok({ data, wil, onSave, onDelete }) {
     </>
   );
 }
-
