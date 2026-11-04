@@ -1,7 +1,7 @@
 export default function HakCipta() {
   return (
-    <div className="wrap sect" style={{ paddingTop: 8 }}>
-      <h1 style={{ marginBottom: 16 }}>Hak cipta</h1>
+    <div>
+      <div className="head"><div><h1>Hak cipta</h1><p className="muted">Informasi pembuat dan ketentuan penggunaan.</p></div></div>
       <div className="grid g2">
         <div className="card" style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
           <img className="foto" src="/irlianta.jpg" alt="Foto Irlianta" width="140" height="140" />
@@ -20,7 +20,7 @@ export default function HakCipta() {
         </div>
         <div className="card">
           <h3>Teknologi</h3>
-          <ul className="plain"><li>React dan Vite</li><li>Supabase untuk database dan autentikasi (tahap berikutnya)</li><li>GitHub dan Vercel untuk kode dan hosting</li></ul>
+          <ul className="plain"><li>React dan Vite</li><li>Supabase untuk database dan autentikasi</li><li>GitHub dan Vercel untuk kode dan hosting</li></ul>
         </div>
         <div className="card">
           <h3>Kontak</h3>
