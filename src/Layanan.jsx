@@ -10,13 +10,13 @@ export default function Layanan({ data, wil, bulanAkhir, onSave, onDelete }) {
   const [maks, setMaks] = useState(30);
   const upd = (o) => setForm({ ...form, ...o });
   const baru = () => { const w = awalWil(wil); setErr(""); setForm({ bulan: bulanAkhir || "2026-10", ...w, fasilitas: "Pustu " + w.desa, metode: "Suntik", pelayanan: 0, efek: 0, gagal: 0, dirujuk: 0, tuntas: 0 }); };
-  const simpan = (e) => {
+  const simpan = async (e) => {
     e.preventDefault();
     const n = Object.fromEntries(ANGKA.map((k) => [k, Math.max(0, +form[k] || 0)]));
     if (n.efek + n.gagal > n.pelayanan) return setErr("Efek samping ditambah kegagalan tidak boleh melebihi jumlah pelayanan.");
     if (n.dirujuk > n.efek + n.gagal) return setErr("Kasus dirujuk tidak boleh melebihi jumlah efek samping ditambah kegagalan.");
     if (n.tuntas > n.dirujuk) return setErr("Rujukan tuntas tidak boleh melebihi kasus dirujuk.");
-    onSave({ ...form, ...n }); setForm(null);
+    if (await onSave({ ...form, ...n })) setForm(null);
   };
   const urut = [...data].sort((a, b) => b.bulan.localeCompare(a.bulan) || a.kec.localeCompare(b.kec));
   const tot = (k) => data.reduce((a, x) => a + x[k], 0);

@@ -4,7 +4,7 @@ import { label } from "./shared.jsx";
 
 const GRUP = [["Monitoring", ["Input", "Proses", "Output"]], ["Evaluasi", ["Outcome", "Impact"]]];
 
-export default function Instrumen({ keluarga, poktan, layanan, wil, bulanAkhir, targets, setTargets }) {
+export default function Instrumen({ keluarga, poktan, layanan, wil, bulanAkhir, targets, setTargets, onSimpan, onReset }) {
   const [t, setT] = useState("Input");
   const kunci = wil.kec + "/" + wil.desa;
   const ubah = Object.fromEntries(Object.entries(targets).filter(([k]) => k.startsWith(kunci + "|")).map(([k, v]) => [k.split("|")[1], v]));
@@ -12,7 +12,7 @@ export default function Instrumen({ keluarga, poktan, layanan, wil, bulanAkhir, 
   const semua = Object.values(data).flat();
   const tercapai = semua.filter((i) => D.capaian(i) >= 90).length;
   const setTarget = (id, v) => setTargets({ ...targets, [kunci + "|" + id]: v === "" ? "" : +v });
-  const reset = () => setTargets(Object.fromEntries(Object.entries(targets).filter(([k]) => !k.startsWith(kunci + "|"))));
+  const reset = () => { onReset(wil.kec, wil.desa); setTargets(Object.fromEntries(Object.entries(targets).filter(([k]) => !k.startsWith(kunci + "|")))); };
 
   return (
     <>
@@ -31,7 +31,7 @@ export default function Instrumen({ keluarga, poktan, layanan, wil, bulanAkhir, 
         <thead><tr><th>Indikator</th><th>Satuan</th><th>Target</th><th>Realisasi</th><th>Capaian</th><th>Status</th></tr></thead>
         <tbody>{data[t].map((i) => { const c = D.capaian(i), [st, kl] = D.statusCapaian(c); return (
           <tr key={i.id}><td>{i.nama}{i.arah === "turun" && <div className="muted" style={{ fontSize: ".82rem" }}>semakin rendah semakin baik</div>}</td><td>{i.satuan}</td>
-            <td style={{ width: 120 }}><input type="number" step="any" min="0" aria-label={"Target " + i.nama} value={i.target} onChange={(e) => setTarget(i.id, e.target.value)} style={{ marginTop: 0 }} /></td>
+            <td style={{ width: 120 }}><input type="number" step="any" min="0" aria-label={"Target " + i.nama} value={i.target} onChange={(e) => setTarget(i.id, e.target.value)} onBlur={(e) => onSimpan(wil.kec, wil.desa, i.id, e.target.value)} style={{ marginTop: 0 }} /></td>
             <td><b>{i.realisasi}</b></td>
             <td><div style={{ display: "flex", gap: 8, alignItems: "center" }}>{c}%<div className="bar"><i style={{ width: c + "%" }} /></div></div></td>
             <td><span className={"pill " + kl}>{st}</span></td></tr>); })}</tbody>
